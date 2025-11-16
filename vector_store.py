@@ -17,7 +17,6 @@ class VectorStore:
 
         self.embeddings = HuggingFaceEmbeddings(
             model_name=model_name,
-            model_kwargs={'device': 'cpu'},  
             encode_kwargs={'normalize_embeddings': True}
         )
 
