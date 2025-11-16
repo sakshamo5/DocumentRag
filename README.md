@@ -2,7 +2,7 @@
 
 A production-ready Retrieval-Augmented Generation (RAG) system with conversational memory, evaluation metrics, and embedding fine-tuning capabilities.
 
-## 🚀 Features
+##  Features
 
 - **Multi-Document Processing**: Upload and process multiple PDF documents simultaneously
 - **Semantic Search**: FAISS-powered vector similarity search
@@ -14,7 +14,7 @@ A production-ready Retrieval-Augmented Generation (RAG) system with conversation
 - **Persistent Storage**: Save and load vector indices
 - **Source Citations**: Automatic source attribution with page numbers
 
-## 📋 Requirements
+##  Requirements
 
 - Python 3.8+
 - Groq API key (get one at [console.groq.com](https://console.groq.com))
@@ -38,7 +38,7 @@ cp .env_template .env
 # Edit .env and add your GROQ_API_KEY
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Basic Usage
 
@@ -72,7 +72,7 @@ answer = rag.ask("What is the main topic?")
 print(answer)
 ```
 
-## 📚 Project Structure
+##  Project Structure
 
 ```
 rag-system/
@@ -88,7 +88,7 @@ rag-system/
 └── README.md              # This file
 ```
 
-## 🎯 Available Models
+## Available Models
 
 The system supports multiple Groq models:
 
@@ -99,7 +99,7 @@ The system supports multiple Groq models:
 
 Switch models in the UI or update `DEFAULT_MODEL` in `config.py`.
 
-## 🔧 Configuration
+##  Configuration
 
 Edit `config.py` to customize:
 
@@ -118,7 +118,7 @@ CHUNK_OVERLAP = 100
 DEFAULT_K = 5  # Number of chunks to retrieve
 ```
 
-## 📊 Evaluation
+##  Evaluation
 
 ### Generate Test Set
 
@@ -143,7 +143,7 @@ generation_results = evaluator.evaluate_generation(sample_size=10)
 evaluator.save_evaluation_results(retrieval_results, generation_results)
 ```
 
-## 🎯 Fine-tuning Embeddings
+## Fine-tuning Embeddings
 
 ### Generate Training Data
 
@@ -177,7 +177,7 @@ Update `config.py`:
 EMBEDDING_MODEL = "models/finetuned_embeddings"
 ```
 
-## 💡 Advanced Features
+## Advanced Features
 
 ### Conversational Memory
 
@@ -222,7 +222,7 @@ results = vector_store.similarity_search_with_metadata(
 )
 ```
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -244,7 +244,7 @@ results = vector_store.similarity_search_with_metadata(
 
 4. **Out of memory**: Reduce `CHUNK_SIZE` or process fewer documents at once
 
-## 📈 Performance Tips
+##  Performance Tips
 
 1. **GPU Acceleration**: Use `faiss-gpu` and set `device='cuda'` in `vector_store.py`
 2. **Batch Processing**: Process multiple files at once for efficiency
@@ -252,7 +252,7 @@ results = vector_store.similarity_search_with_metadata(
 4. **Model Selection**: Use smaller models (Gemma 2 9B) for faster responses
 5. **Chunk Optimization**: Experiment with chunk size (500-1000 chars works well)
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Areas for improvement:
 
@@ -263,21 +263,20 @@ Contributions are welcome! Areas for improvement:
 - [ ] API endpoint wrapper
 - [ ] Batch evaluation tools
 
-## 📄 License
+##  License
 
 MIT License - feel free to use this project for learning or commercial purposes.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - [LangChain](https://python.langchain.com/) for RAG orchestration
 - [Groq](https://groq.com/) for ultra-fast LLM inference
 - [FAISS](https://faiss.ai/) for efficient similarity search
 - [Sentence Transformers](https://www.sbert.net/) for embeddings
 
-## 📧 Contact
+## Contact
 
 For questions or feedback, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ for the AI community**
