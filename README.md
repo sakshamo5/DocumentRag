@@ -23,7 +23,7 @@ A production-ready Retrieval-Augmented Generation (RAG) system with conversation
 
 1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/sakshamo5/DocumentRag>
 cd rag-system
 ```
 
