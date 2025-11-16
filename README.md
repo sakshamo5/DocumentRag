@@ -252,16 +252,6 @@ results = vector_store.similarity_search_with_metadata(
 4. **Model Selection**: Use smaller models (Gemma 2 9B) for faster responses
 5. **Chunk Optimization**: Experiment with chunk size (500-1000 chars works well)
 
-##  Contributing
-
-Contributions are welcome! Areas for improvement:
-
-- [ ] Support for more document formats (Word, TXT, etc.)
-- [ ] Multi-language support
-- [ ] Advanced retrieval strategies (hybrid search, reranking)
-- [ ] Cloud deployment guides (AWS, GCP, Azure)
-- [ ] API endpoint wrapper
-- [ ] Batch evaluation tools
 
 ##  License
 
