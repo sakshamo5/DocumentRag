@@ -53,7 +53,9 @@ class DocumentProcessor:
         chunks = self.text_splitter.split_documents(documents)
 
         for chunk in chunks:
-            chunk.metadata['source'] = os.path.basename(file_path)
+            basename = os.path.basename(file_path)
+            chunk.metadata['source'] = basename
+            chunk.metadata['filename'] = basename
             chunk.metadata['file_hash'] = file_hash
 
         self.processed_files[file_hash] = chunks

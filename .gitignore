@@ -1,0 +1,6 @@
+documents/
+venv/
+__pychache__/
+*.pyc
+*.pyo
+faiss_index/

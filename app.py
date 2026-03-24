@@ -3,7 +3,6 @@ from document_processor import DocumentProcessor
 from vector_store import VectorStore
 from rag_pipeline import RAGPipeline
 from evaluation import RAGEvaluator
-from finetuning import EmbeddingFineTuner
 from config import AVAILABLE_MODELS, DEFAULT_MODEL, EMBEDDING_MODEL, FAISS_INDEX_PATH
 import tempfile
 import os
@@ -134,8 +133,8 @@ with st.sidebar:
     st.subheader("Statistics")
     stats = st.session_state.vector_store.get_statistics()
 
-    st.metric("Total Documents", stats.get('total_documents', 0))
-    st.metric("Unique Sources", stats.get('unique_sources', 0))
+    st.metric("PDFs Indexed", stats.get('total_pdfs', 0))
+    st.metric("Total Chunks", stats.get('total_chunks', 0))
 
     if stats.get('source_files'):
         with st.expander("View Source Files"):
@@ -155,10 +154,10 @@ with st.sidebar:
 st.title("Document Q&A Chat")
 
 if st.session_state.show_advanced:
-    tab1, tab2, tab3, tab4 = st.tabs(["Chat", "Evaluation", "Fine-tuning", "About"])
+    tab1, tab2, tab4 = st.tabs(["Chat", "Evaluation", "About"])
 else:
     tab1, tab4 = st.tabs(["Chat", "About"])
-    tab2, tab3 = None, None
+    tab2 = None
 
 with tab1:
     if st.session_state.vector_store.vector_store is None:
@@ -313,83 +312,6 @@ if tab2 and st.session_state.show_advanced:
                         else:
                             st.error("No test set available. Generate one first!")
 
-if tab3 and st.session_state.show_advanced:
-    with tab3:
-        st.header("Embedding Fine-tuning")
-
-        if st.session_state.vector_store.vector_store is None:
-            st.warning("Please upload and process documents first.")
-        else:
-            finetuner = EmbeddingFineTuner(EMBEDDING_MODEL)
-
-            st.subheader("1. Generate Training Data")
-
-            col1, col2 = st.columns(2)
-            with col1:
-                num_pairs = st.number_input("Training pairs", 20, 200, 50)
-            with col2:
-                if st.button("Generate Training Data", use_container_width=True):
-                    with st.spinner("Generating training data..."):
-                        docs = st.session_state.vector_store.get_all_documents()
-                        training_data = finetuner.generate_training_data_from_docs(
-                            docs,
-                            st.session_state.rag_pipeline.llm,
-                            num_pairs=num_pairs
-                        )
-                        finetuner.save_training_data("training_data.json")
-                        st.success(f"Generated {len(training_data)} pairs")
-
-            st.divider()
-
-            st.subheader("2. Fine-tune Model")
-
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                epochs = st.number_input("Epochs", 1, 10, 3)
-            with col2:
-                batch_size = st.number_input("Batch size", 8, 32, 16)
-            with col3:
-                if st.button("Start Fine-tuning", use_container_width=True):
-                    if os.path.exists("training_data.json"):
-                        with st.spinner("Fine-tuning in progress... This may take a while."):
-                            finetuner.load_training_data("training_data.json")
-                            finetuner.fine_tune(
-                                output_path="models/finetuned_embeddings",
-                                epochs=epochs,
-                                batch_size=batch_size
-                            )
-                            st.success("Fine-tuning complete!")
-                            st.info("Restart the app and update EMBEDDING_MODEL in config.py to use the fine-tuned model")
-                    else:
-                        st.error("Generate training data first!")
-
-            st.divider()
-
-            st.subheader("3. Compare Models")
-
-            test_query = st.text_input("Test query", "What is the main topic of the documents?")
-
-            if st.button("Compare Base vs Fine-tuned", use_container_width=True):
-                if os.path.exists("models/finetuned_embeddings"):
-                    with st.spinner("Comparing models..."):
-                        docs = list(st.session_state.vector_store.get_all_documents())[:10]
-                        doc_texts = [doc.page_content for doc in docs]
-
-                        results = finetuner.compare_models(
-                            test_query,
-                            doc_texts,
-                            "models/finetuned_embeddings"
-                        )
-
-                        if results:
-                            st.write("**Comparison Results:**")
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.metric("Base Model Top Doc", results['base_model_top_doc'])
-                            with col2:
-                                st.metric("Fine-tuned Top Doc", results['finetuned_model_top_doc'])
-                else:
-                    st.error("Fine-tuned model not found. Train it first!")
 
 with tab4:
     st.header("About This RAG System")
@@ -402,7 +324,6 @@ with tab4:
     - **Conversational AI**: Chat with your documents using Groq LLMs
     - **Memory**: Maintains conversation context across multiple queries
     - **Evaluation**: Comprehensive metrics for retrieval and generation quality
-    - **Fine-tuning**: Custom embedding model training for better accuracy
     - **Persistence**: Save and load vector indices
     - **Proper Citations**: Accurate page number referencing (1-indexed)
 
@@ -420,7 +341,7 @@ with tab4:
     2. **Process**: Click "Process" to create embeddings
     3. **Ask Questions**: Chat with your documents in natural language
     4. **View Sources**: Expand sources to see exact page numbers
-    5. **Advanced**: Enable advanced features for evaluation and fine-tuning
+    5. **Advanced**: Enable advanced features for evaluation
 
     ### Models Available
 

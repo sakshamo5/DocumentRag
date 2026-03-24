@@ -22,7 +22,8 @@ class VectorStore:
         )
 
         self.vector_store = None
-        self.document_count = 0
+        self.document_count = 0  # total chunks
+        self.indexed_pdfs: set = set()  # unique PDF filenames
         print(f"✓ Embedding model loaded successfully!")
 
     def create_vector_store(self, documents: List) -> None:
@@ -46,16 +47,28 @@ class VectorStore:
         self.document_count = len(documents)
         print(f"✓ Vector store created with {len(documents)} embeddings!")
 
-    def add_documents(self, documents: List) -> None:
+    def add_documents(self, documents: List, source_filenames: Optional[List[str]] = None) -> None:
         """
         Add new documents to existing vector store
 
         Args:
             documents: List of document chunks to add
+            source_filenames: List of original PDF filenames being indexed
         """
         if not documents:
             print("No documents to add!")
             return
+
+        # Track unique PDFs
+        if source_filenames:
+            for fname in source_filenames:
+                self.indexed_pdfs.add(fname)
+        else:
+            # Infer from chunk metadata
+            for doc in documents:
+                fname = doc.metadata.get('filename') or doc.metadata.get('source')
+                if fname:
+                    self.indexed_pdfs.add(fname)
 
         if self.vector_store is None:
             self.create_vector_store(documents)
@@ -63,7 +76,7 @@ class VectorStore:
             print(f"Adding {len(documents)} new chunks to vector store...")
             self.vector_store.add_documents(documents)
             self.document_count += len(documents)
-            print(f"✓ Chunks added! Total documents: {self.document_count}")
+            print(f"✓ Chunks added! Total chunks: {self.document_count}, PDFs: {len(self.indexed_pdfs)}")
 
     def similarity_search(self, query: str, k: int = 5) -> List[Tuple]:
         """
@@ -153,12 +166,17 @@ class VectorStore:
 
         metadata = {
             'model_name': self.model_name,
-            'document_count': self.document_count
+            'document_count': self.document_count,
+            'indexed_pdfs': list(self.indexed_pdfs)
         }
         with open(os.path.join(path, 'metadata.json'), 'w') as f:
             json.dump(metadata, f)
 
         print(f"✓ Vector store saved to {path}")
+
+    def save_index(self, path: str = "faiss_index") -> None:
+        """Alias for save_local"""
+        self.save_local(path)
 
     def load_local(self, path: str = "faiss_index") -> bool:
         """
@@ -186,13 +204,18 @@ class VectorStore:
                 with open(metadata_path, 'r') as f:
                     metadata = json.load(f)
                     self.document_count = metadata.get('document_count', 0)
+                    self.indexed_pdfs = set(metadata.get('indexed_pdfs', []))
 
             print(f"✓ Vector store loaded from {path}")
-            print(f"  Documents: {self.document_count}")
+            print(f"  Chunks: {self.document_count}, PDFs: {len(self.indexed_pdfs)}")
             return True
         except Exception as e:
             print(f"Error loading vector store: {e}")
             return False
+
+    def load_index(self, path: str = "faiss_index") -> bool:
+        """Alias for load_local"""
+        return self.load_local(path)
 
     def get_all_documents(self) -> List:
         """Get all documents from vector store"""
@@ -214,9 +237,15 @@ class VectorStore:
 
     def get_statistics(self) -> Dict:
         """Get vector store statistics"""
+        unique_sources = self.get_unique_sources()
+        # Prefer the explicitly tracked PDF set; fall back to metadata-inferred sources
+        pdf_count = len(self.indexed_pdfs) if self.indexed_pdfs else len(unique_sources)
         return {
+            'total_chunks': self.document_count,
+            'total_pdfs': pdf_count,
+            # Keep legacy key so existing callers don't break
             'total_documents': self.document_count,
+            'unique_sources': pdf_count,
             'embedding_model': self.model_name,
-            'unique_sources': len(self.get_unique_sources()),
-            'source_files': self.get_unique_sources()
+            'source_files': list(self.indexed_pdfs) if self.indexed_pdfs else unique_sources
         }
